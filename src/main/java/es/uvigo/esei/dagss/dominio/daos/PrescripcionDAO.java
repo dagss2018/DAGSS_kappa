@@ -20,5 +20,10 @@ public class PrescripcionDAO extends GenericoDAO<Prescripcion> {
         return q.getSingleResult();
     }
     
-    // Completar aqui  
+    // Completar aqui
+    @Override
+    public Prescripcion crear(Prescripcion p){ //se le pasa presquipcion con recetas=null
+        
+        return p;
+    }
 }

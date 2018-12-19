@@ -53,4 +53,11 @@ public class PacienteDAO extends GenericoDAO<Paciente> {
     }
 
     // Completar aqui
+    
+    public boolean pacienteTienePass(String numeroSeguridadSocial){
+        TypedQuery<Paciente> q = em.createQuery("SELECT p FROM Paciente AS p WHERE p.numeroSeguridadSocial = :numeroSeguridadSocial", Paciente.class);
+        q.setParameter("numeroSeguridadSocial", numeroSeguridadSocial);
+        Paciente p=filtrarResultadoUnico(q);
+        return p.getPassword().isEmpty();
+    }
 }
