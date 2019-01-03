@@ -115,7 +115,7 @@ public class FarmaciaControlador implements Serializable {
     public List<Receta> getRecetasPaciente(String numTarjSan){
         if(this.autenticacionControlador.isUsuarioAutenticado()){
             List<Receta> toret=this.recetaDAO.buscarPorNumTarjeta(numTarjSan);
-            for(Receta receta:toret) if(receta.enFecha()) toret.remove(receta);
+            for(Receta receta:toret) if(!receta.enFecha()) toret.remove(receta);
             return toret;
         }
         else return null;
