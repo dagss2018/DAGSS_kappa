@@ -149,9 +149,8 @@ public class Receta implements Serializable {
         return true;
     }
 
-
-
-    
-
-    
+    public boolean enFecha(){
+        Date fecha=new Date();
+        return this.getInicioValidez().getTime()>fecha.getTime() || this.getFinValidez().getTime()<fecha.getTime();
+    }
 }
