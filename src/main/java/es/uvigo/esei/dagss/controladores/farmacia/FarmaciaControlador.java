@@ -121,6 +121,7 @@ public class FarmaciaControlador implements Serializable {
         else return null;
     }
     
+    //cambia el estado de las recetas generadas a servidas
     public void setRecetasServidas(List<Receta> recetas){
         for(Receta receta:recetas){
             if(receta.enFecha() && receta.getEstado().equals(EstadoReceta.GENERADA)){
