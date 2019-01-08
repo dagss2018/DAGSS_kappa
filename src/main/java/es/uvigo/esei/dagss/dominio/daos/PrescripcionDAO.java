@@ -7,6 +7,7 @@ import es.uvigo.esei.dagss.dominio.entidades.Prescripcion;
 import es.uvigo.esei.dagss.dominio.entidades.Receta;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -45,5 +46,11 @@ public class PrescripcionDAO extends GenericoDAO<Prescripcion> {
         p.setRecetas(recetas);
         this.em.persist(p); // Crea una nueva tupla en la BD
         return p;
+    }
+    
+    public List<Prescripcion> buscarPorIdPaciente(String idPaciente){
+        TypedQuery<Prescripcion> q = em.createQuery("SELECT p FROM Prescripcion p WHERE p.paciente.id=:id", Prescripcion.class);
+        q.setParameter("id",idPaciente);
+        return q.getResultList();
     }
 }

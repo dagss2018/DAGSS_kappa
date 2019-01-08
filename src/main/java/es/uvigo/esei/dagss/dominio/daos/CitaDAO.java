@@ -33,4 +33,10 @@ public class CitaDAO  extends GenericoDAO<Cita>{
         q.setParameter("est",est);
         return q.getResultList();
     }
+    
+    public List<Cita> buscarPorDniMedico(String dniMedico){
+        TypedQuery<Cita> q = em.createQuery("SELECT c FROM Cita c WHERE c.medico.dni=:dni", Cita.class);
+        q.setParameter("dni",dniMedico);
+        return q.getResultList();
+    }
 }
