@@ -11,9 +11,11 @@ import es.uvigo.esei.dagss.dominio.daos.PacienteDAO;
 import es.uvigo.esei.dagss.dominio.daos.PrescripcionDAO;
 import es.uvigo.esei.dagss.dominio.daos.RecetaDAO;
 import es.uvigo.esei.dagss.dominio.entidades.Cita;
+import es.uvigo.esei.dagss.dominio.entidades.Direccion;
 import es.uvigo.esei.dagss.dominio.entidades.EstadoCita;
 import es.uvigo.esei.dagss.dominio.entidades.Medicamento;
 import es.uvigo.esei.dagss.dominio.entidades.Medico;
+import es.uvigo.esei.dagss.dominio.entidades.Paciente;
 import es.uvigo.esei.dagss.dominio.entidades.Prescripcion;
 import es.uvigo.esei.dagss.dominio.entidades.Receta;
 import es.uvigo.esei.dagss.dominio.entidades.TipoUsuario;
@@ -40,6 +42,12 @@ public class MedicoControlador implements Serializable {
     private String dni;
     private String numeroColegiado;
     private String password;
+    
+    private List<Cita> listadoCitas;
+    private List<Prescripcion> listadoPrescripciones;
+    private List<Medicamento> listadoMedicamentos;
+    private Prescripcion nuevaPrescripcion;
+    private String textoBusqueda;
 
     @Inject
     private AutenticacionControlador autenticacionControlador;
@@ -67,6 +75,46 @@ public class MedicoControlador implements Serializable {
      * Creates a new instance of AdministradorControlador
      */
     public MedicoControlador() {
+    }
+
+    public List<Cita> getListadoCitas() {
+        return listadoCitas;
+    }
+
+    public void setListadoCitas(List<Cita> listadoCitas) {
+        this.listadoCitas = listadoCitas;
+    }
+
+    public List<Prescripcion> getListadoPrescripciones() {
+        return listadoPrescripciones;
+    }
+
+    public void setListadoPrescripciones(List<Prescripcion> listadoPrescripciones) {
+        this.listadoPrescripciones = listadoPrescripciones;
+    }
+
+    public List<Medicamento> getListadoMedicamentos() {
+        return listadoMedicamentos;
+    }
+
+    public void setListadoMedicamentos(List<Medicamento> listadoMedicamentos) {
+        this.listadoMedicamentos = listadoMedicamentos;
+    }
+
+    public Prescripcion getNuevaPrescripcion() {
+        return nuevaPrescripcion;
+    }
+
+    public void setNuevaPrescripcion(Prescripcion nuevaPrescripcion) {
+        this.nuevaPrescripcion = nuevaPrescripcion;
+    }
+
+    public String getTextoBusqueda() {
+        return textoBusqueda;
+    }
+
+    public void setTextoBusqueda(String textoBusqueda) {
+        this.textoBusqueda = textoBusqueda;
     }
 
     public String getDni() {
@@ -142,50 +190,107 @@ public class MedicoControlador implements Serializable {
         return "detallesCita";
     }
     
-    //devuelve la lista de citas del dia que tiene el medico registrado (null si no hay medico registrado)
-    public List<Cita> getCitasDia(){
+    //devuelve la lista de citas del dia que tiene el medico registrado (error si no hay medico registrado)
+    public String getCitasDia(){
         if(this.medicoActual!=null){
             Date date=new Date();
             List<Cita> toret=this.citaDAO.buscarPorDniMedico(this.medicoActual.getDni());
             for(Cita cita:toret) if(cita.getFecha().getYear()!=date.getYear() || cita.getFecha().getMonth()!=date.getMonth() || cita.getFecha().getDate()!=date.getDate()) toret.remove(cita);
-            return toret;
+            this.listadoCitas=toret;
+            return "lista_citas_medico";
         }
-        else return null;
+        else return "error";
     }
     
-    //devuelve si la cita esta en estado 'planificada' y cambia este a 'completada'
-    public boolean atenderCita(String idCita){
-        if(this.autenticacionControlador.isUsuarioAutenticado()){
-            Cita cita=this.citaDAO.buscarPorId(idCita);
-            if(cita.getEstado().equals(EstadoCita.PLANIFICADA)) cita.setEstado(EstadoCita.COMPLETADA);
-            return cita.getEstado().equals(EstadoCita.PLANIFICADA);
-        }
-        else return false;
+    //devuelve si la cita esta en estado 'planificada'
+    public boolean atenderCita(Cita cita){
+        if(this.medicoActual==null) return false;
+        else return cita.getEstado().equals(EstadoCita.PLANIFICADA) && cita.getMedico().getId().equals(this.medicoActual.getId());
     }
     
     //devuelve las prescripciones activas de un paciente
-    public List<Prescripcion> getPrescripcionesPaciente(String idPaciente){
+    public String getPrescripcionesPaciente(Paciente paciente){
         Date date=new Date();
-        List<Prescripcion> toret=this.prescripcionDAO.buscarPorIdPaciente(idPaciente);
+        List<Prescripcion> toret=this.prescripcionDAO.buscarPorIdPaciente(paciente.getId().toString());
         for(Prescripcion p:toret) if(p.getFechaFin().getTime()>=date.getTime()) toret.remove(p);
-        return toret;
+        this.listadoPrescripciones=toret;
+        return "lista_prescripciones";
     }
     
     //devuelve el resultado de la busqueda de un medicamento (form)
-    public List<Medicamento> getMedicamentos(String name,String prinActivo,String fabricante){
-        if(name.isEmpty() && prinActivo.isEmpty() && fabricante.isEmpty()) return this.medicamentoDAO.buscarTodos(); //si el form esta vacio devuelve todos los medicamentos
-        else return this.medicamentoDAO.busquedaForm(name, prinActivo, fabricante);
+    public String getMedicamentosPorNombre(){
+        if(this.textoBusqueda.isEmpty()){
+            this.listadoMedicamentos=this.medicamentoDAO.buscarTodos();
+            return "crear_prescripcion";
+        } //si el form esta vacio devuelve todos los medicamentos
+        else{
+            this.listadoMedicamentos=this.medicamentoDAO.busquedaPorNombre(this.textoBusqueda);
+            return "crear_prescripcion";
+        }
     }
     
-    public void crearPrescripcion(String dosis,Date fFin,Date fInicio,String indicaciones,String idMedicamento,String idMedico,String idPaciente){
-        this.prescripcionDAO.crear(new Prescripcion(this.pacienteDAO.buscarPorId(idPaciente),this.medicamentoDAO.buscarPorId(idMedicamento),this.medicoActual,Integer.parseInt(dosis),indicaciones,fInicio,fFin));
+    //devuelve el resultado de la busqueda de un medicamento (form)
+    public String getMedicamentosPorPrinActivo(){
+        if(this.textoBusqueda.isEmpty()){
+            this.listadoMedicamentos=this.medicamentoDAO.buscarTodos();
+            return "crear_prescripcion";
+        } //si el form esta vacio devuelve todos los medicamentos
+        else{
+            this.listadoMedicamentos=this.medicamentoDAO.busquedaPorPrinActivo(this.textoBusqueda);
+            return "crear_prescripcion";
+        }
+    }
+    
+    //devuelve el resultado de la busqueda de un medicamento (form)
+    public String getMedicamentosPorFabricante(){
+        if(this.textoBusqueda.isEmpty()){
+            this.listadoMedicamentos=this.medicamentoDAO.buscarTodos();
+            return "crear_prescripcion";
+        } //si el form esta vacio devuelve todos los medicamentos
+        else{
+            this.listadoMedicamentos=this.medicamentoDAO.busquedaPorFabricante(this.textoBusqueda);
+            return "crear_prescripcion";
+        }
+    }
+    
+    //crea la prescripcion para un paciente dado (pasar recetas en null y prescripcionDAO se encarga de crearlas)
+    public void crearPrescripcion(){
+        this.nuevaPrescripcion.setMedico(this.medicoActual);
+        this.prescripcionDAO.crear(this.nuevaPrescripcion);
     }
     
     //elimina una prescripcion dada (y todas sus recetas asignadas)
-    public void borrarPrescripcion(String idPrescripcion){
-        Prescripcion p=this.prescripcionDAO.buscarPorId(idPrescripcion);
+    public void borrarPrescripcion(Prescripcion p){
         List<Receta> recetas=p.getRecetas();
         this.prescripcionDAO.eliminar(p);
         for(Receta receta:recetas) this.recetaDAO.eliminar(receta);
+    }
+    
+    public void finalizarCita(Cita cita){
+        if(this.autenticacionControlador.isUsuarioAutenticado()){
+            if(cita.getEstado().equals(EstadoCita.PLANIFICADA)) cita.setEstado(EstadoCita.COMPLETADA);
+            this.citaDAO.actualizar(cita);
+        }
+    }
+    
+    public void notificarAusente(Cita cita){
+        if(this.autenticacionControlador.isUsuarioAutenticado()){
+            if(cita.getEstado().equals(EstadoCita.PLANIFICADA)) cita.setEstado(EstadoCita.AUSENTE);
+            this.citaDAO.actualizar(cita);
+        }
+    }
+    
+    public void cambiarDatosMedicoActual(String pass,String nombre,String apellidos,String telefono,String email){
+        if(this.medicoActual!=null && this.getPassword()!=null){
+            if(pass!=null){
+                this.setPassword(pass);
+                this.medicoActual.setPassword(pass);
+            }
+            if(nombre!=null) this.medicoActual.setNombre(nombre);
+            if(apellidos!=null) this.medicoActual.setApellidos(apellidos);
+            if(telefono!=null) this.medicoActual.setTelefono(telefono);
+            if(email!=null) this.medicoActual.setEmail(email);
+            this.medicoDAO.actualizar(this.medicoActual);
+        }
     }
 }

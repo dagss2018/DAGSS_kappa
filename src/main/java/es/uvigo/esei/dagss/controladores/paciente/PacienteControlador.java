@@ -17,6 +17,7 @@ import es.uvigo.esei.dagss.dominio.entidades.TipoUsuario;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -38,6 +39,11 @@ public class PacienteControlador implements Serializable {
     private String numeroTarjetaSanitaria;
     private String numeroSeguridadSocial;
     private String password;
+    
+    private List<Cita> listadoCitas;
+    private List<Receta> listadoRecetas;
+    private List<Date> listadoHoras;
+    private Cita nuevaCita;
 
     @Inject
     private AutenticacionControlador autenticacionControlador;
@@ -57,6 +63,38 @@ public class PacienteControlador implements Serializable {
     public PacienteControlador() {
     }
 
+    public Cita getNuevaCita() {
+        return nuevaCita;
+    }
+
+    public void setNuevaCita(Cita nuevaCita) {
+        this.nuevaCita = nuevaCita;
+    }
+    
+    public List<Cita> getListadoCitas() {
+        return listadoCitas;
+    }
+
+    public void setListadoCitas(List<Cita> listadoCitas) {
+        this.listadoCitas = listadoCitas;
+    }
+
+    public List<Receta> getListadoRecetas() {
+        return listadoRecetas;
+    }
+
+    public void setListadoRecetas(List<Receta> listadoRecetas) {
+        this.listadoRecetas = listadoRecetas;
+    }
+
+    public List<Date> getListadoHoras() {
+        return listadoHoras;
+    }
+
+    public void setListadoHoras(List<Date> listadoHoras) {
+        this.listadoHoras = listadoHoras;
+    }
+    
     @PostConstruct
     public void inicializar() {
     }
@@ -150,33 +188,34 @@ public class PacienteControlador implements Serializable {
         return destino;
     }
     
-    //devuelve las lista de citas actuales del paciente logueado (null si el paciente no esta logueado)
-    public List<Cita> getCitasPaciente(){
+    //devuelve las lista de citas actuales del paciente logueado (error si el paciente no esta logueado)
+    public String getCitasPaciente(){
         if(this.pacienteActual!=null){
             List<Cita> citas=this.citaDAO.buscarPorNSS(this.pacienteActual.getNumeroSeguridadSocial());
             for(Cita cita:citas) if(cita.getFecha().getTime()<new Date().getTime()) citas.remove(cita);
-            return citas;
+            this.listadoCitas=citas;
+            return "lista_citas";
         }
-        else return null;
+        else return "error";
     }
     
     //anular una cita por realizar
-    public void anularCita(long idCita){
-        if(this.autenticacionControlador.isUsuarioAutenticado()){
-            Cita cita=this.citaDAO.buscarPorId(idCita);
+    public void anularCita(Cita cita){
+        if(this.autenticacionControlador.isUsuarioAutenticado() && cita.getPaciente().getId().equals(this.pacienteActual.getId())){
             if(cita.getEstado().equals(EstadoCita.PLANIFICADA)) cita.setEstado(EstadoCita.ANULADA);
             this.citaDAO.actualizar(cita);
         }
     }
     
-    //devuelve las lista de recetas actuales del paciente logueado (null si el paciente no esta logueado o no tiene contraseña)
-    public List<Receta> getRecetasPaciente(){
+    //devuelve las lista de recetas actuales del paciente logueado (error si el paciente no esta logueado o no tiene contraseña)
+    public String getRecetasPaciente(){
         if(this.pacienteActual!=null && this.getPassword()!=null){
             List<Receta> recetas=this.recetaDAO.buscarPorNumTarjeta(this.pacienteActual.getNumeroTarjetaSanitaria());
             for(Receta receta:recetas) if(!receta.enFecha() || !receta.getEstado().equals(EstadoReceta.GENERADA)) recetas.remove(receta);
-            return recetas;
+            this.listadoRecetas=recetas;
+            return "lista_recetas";
         }
-        else return null;
+        else return "error";
     }
     
     //modifica los datos de la farmacia logeada
@@ -193,5 +232,31 @@ public class PacienteControlador implements Serializable {
             if(email!=null) this.pacienteActual.setEmail(email);
             this.pacienteDAO.actualizar(this.pacienteActual);
         }
+    }
+    
+    //para una fecha dada muestra los huecos existentes para una cita
+    public String mostrarHorasCita(Date fecha){
+        List<Date> toret=new ArrayList<>();
+        List<Cita> citas=this.citaDAO.buscarPorFecha(fecha.toString());
+        for(int hour=0;hour<=23;hour++){
+            for(int min=0;min<=45;min+=15){
+                boolean libre=true;
+                for(Cita cita:citas) if(cita.getHora().getHours()==hour && cita.getHora().getMinutes()==min) libre=false;
+                if(libre){
+                    fecha.setHours(hour);
+                    fecha.setMinutes(min);
+                    toret.add(fecha);
+                }
+            }
+        }
+        this.listadoHoras=toret;
+        return "crear_cita";
+    }
+    
+    public void crearCita(){
+        this.nuevaCita.setEstado(EstadoCita.PLANIFICADA);
+        this.nuevaCita.setMedico(this.pacienteActual.getMedico());
+        this.nuevaCita.setPaciente(this.pacienteActual);
+        this.citaDAO.crear(this.nuevaCita);
     }
 }

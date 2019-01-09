@@ -32,6 +32,8 @@ public class FarmaciaControlador implements Serializable {
     private Farmacia farmaciaActual;
     private String nif;
     private String password;
+    private List<Receta> listadoRecetas;
+    private String numTarjPaciente;
 
     @Inject
     private AutenticacionControlador autenticacionControlador;
@@ -47,7 +49,23 @@ public class FarmaciaControlador implements Serializable {
      */
     public FarmaciaControlador() {
     }
+    
+    public List<Receta> getListadoRecetas() {
+        return listadoRecetas;
+    }
 
+    public void setListadoRecetas(List<Receta> listadoRecetas) {
+        this.listadoRecetas = listadoRecetas;
+    }
+
+    public String getNumTarjPaciente() {
+        return numTarjPaciente;
+    }
+
+    public void setNumTarjPaciente(String numTarjPaciente) {
+        this.numTarjPaciente = numTarjPaciente;
+    }
+    
     public String getNif() {
         return nif;
     }
@@ -111,14 +129,15 @@ public class FarmaciaControlador implements Serializable {
         }
     }
     
-    //devuelve las lista de recetas actuales de un paciente (null si la farmacia no esta logueada)
-    public List<Receta> getRecetasPaciente(String numTarjSan){
+    //devuelve las lista de recetas actuales de un paciente (error si la farmacia no esta logueada)
+    public String getRecetasPaciente(){
         if(this.autenticacionControlador.isUsuarioAutenticado()){
-            List<Receta> toret=this.recetaDAO.buscarPorNumTarjeta(numTarjSan);
+            List<Receta> toret=this.recetaDAO.buscarPorNumTarjeta(this.numTarjPaciente);
             for(Receta receta:toret) if(!receta.enFecha()) toret.remove(receta);
-            return toret;
+            this.listadoRecetas=toret;
+            return "lista_recetas";
         }
-        else return null;
+        else return "error";
     }
     
     //cambia el estado de las recetas generadas a servidas
@@ -126,6 +145,7 @@ public class FarmaciaControlador implements Serializable {
         for(Receta receta:recetas){
             if(receta.enFecha() && receta.getEstado().equals(EstadoReceta.GENERADA)){
                 receta.setEstado(EstadoReceta.SERVIDA);
+                receta.setFarmaciaDispensadora(this.farmaciaActual);
                 this.recetaDAO.actualizar(receta);
             }
         }
