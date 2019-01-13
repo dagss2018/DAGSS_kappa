@@ -48,6 +48,7 @@ public class MedicoControlador implements Serializable {
     private List<Medicamento> listadoMedicamentos;
     private Prescripcion nuevaPrescripcion;
     private String textoBusqueda;
+    private Cita citaActual;
 
     @Inject
     private AutenticacionControlador autenticacionControlador;
@@ -77,6 +78,14 @@ public class MedicoControlador implements Serializable {
     public MedicoControlador() {
     }
 
+    public Cita getCitaActual(){
+        return citaActual; 
+    }
+    
+    public void setCitaActual(Cita cita){
+        this.citaActual=cita;
+    }
+    
     public List<Cita> getListadoCitas() {
         return listadoCitas;
     }
@@ -175,7 +184,7 @@ public class MedicoControlador implements Serializable {
             } else {
                 if (autenticacionControlador.autenticarUsuario(medico.getId(), password,
                         TipoUsuario.MEDICO.getEtiqueta().toLowerCase())) {
-                    medicoActual = medico;
+                    this.medicoActual = medico;
                     destino = "privado/index";
                 } else {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Credenciales de acceso incorrectas", ""));
@@ -186,20 +195,20 @@ public class MedicoControlador implements Serializable {
     }
 
     //Acciones
-    public String doShowCita() {
+    public String doShowCita(Cita cita) {
+        setCitaActual(cita);
         return "detallesCita";
     }
     
     //devuelve la lista de citas del dia que tiene el medico registrado (error si no hay medico registrado)
-    public String getCitasDia(){
-        if(this.medicoActual!=null){
+    public void getCitasDia(){
+        if(this.autenticacionControlador.isUsuarioAutenticado()){
             Date date=new Date();
             List<Cita> toret=this.citaDAO.buscarPorDniMedico(this.medicoActual.getDni());
-            for(Cita cita:toret) if(cita.getFecha().getYear()!=date.getYear() || cita.getFecha().getMonth()!=date.getMonth() || cita.getFecha().getDate()!=date.getDate()) toret.remove(cita);
-            this.listadoCitas=toret;
-            return "lista_citas_medico";
+            for(Cita cita:toret) if(!(date.getTime()>=cita.getFecha().getTime())||(date.getTime()<(cita.getFecha().getTime() + 86400000))) toret.remove(cita);
+            setListadoCitas(toret);
         }
-        else return "error";
+        
     }
     
     //devuelve si la cita esta en estado 'planificada'
@@ -209,12 +218,13 @@ public class MedicoControlador implements Serializable {
     }
     
     //devuelve las prescripciones activas de un paciente
-    public String getPrescripcionesPaciente(Paciente paciente){
-        Date date=new Date();
-        List<Prescripcion> toret=this.prescripcionDAO.buscarPorIdPaciente(paciente.getId().toString());
-        for(Prescripcion p:toret) if(p.getFechaFin().getTime()>=date.getTime()) toret.remove(p);
-        this.listadoPrescripciones=toret;
-        return "lista_prescripciones";
+    public void getPrescripcionesPaciente(Paciente paciente){
+        if(this.autenticacionControlador.isUsuarioAutenticado()){
+            Date date=new Date();
+            List<Prescripcion> toret=this.prescripcionDAO.buscarPorDniPaciente(paciente.getDni());
+            for(Prescripcion prescripcion:toret) if((date.getTime()>=prescripcion.getFechaFin().getTime())) toret.remove(prescripcion);
+            setListadoPrescripciones(toret);
+        }
     }
     
     //devuelve el resultado de la busqueda de un medicamento (form)
@@ -261,16 +271,16 @@ public class MedicoControlador implements Serializable {
     
     //elimina una prescripcion dada (y todas sus recetas asignadas)
     public void borrarPrescripcion(Prescripcion p){
-        List<Receta> recetas=p.getRecetas();
+        this.listadoPrescripciones.remove(p);
         this.prescripcionDAO.eliminar(p);
-        for(Receta receta:recetas) this.recetaDAO.eliminar(receta);
     }
     
-    public void finalizarCita(Cita cita){
+    public String finalizarCita(Cita cita){
         if(this.autenticacionControlador.isUsuarioAutenticado()){
             if(cita.getEstado().equals(EstadoCita.PLANIFICADA)) cita.setEstado(EstadoCita.COMPLETADA);
             this.citaDAO.actualizar(cita);
         }
+        return "index";
     }
     
     public void notificarAusente(Cita cita){
@@ -279,6 +289,14 @@ public class MedicoControlador implements Serializable {
             this.citaDAO.actualizar(cita);
         }
     }
+    
+    public void notificarPendiente(Cita cita){
+        if(this.autenticacionControlador.isUsuarioAutenticado()){
+            if(cita.getEstado().equals(EstadoCita.AUSENTE)) cita.setEstado(EstadoCita.PLANIFICADA);
+            this.citaDAO.actualizar(cita);
+        }
+    }
+    
     
     public void cambiarDatosMedicoActual(String pass,String nombre,String apellidos,String telefono,String email){
         if(this.medicoActual!=null && this.getPassword()!=null){

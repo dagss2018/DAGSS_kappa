@@ -19,6 +19,58 @@
             </ui:define>
 
             <ui:define name="contenido">
+                <h:form>
+                <h:panelGrid columns="1">
+                    
+                    <p:panelGrid columns="3">
+                        <p:outputLabel value="AGENDA"/>
+                        <h:outputLabel value="#{medicoControlador.medicoActual.numeroColegiado}"/>
+                        <h:outputLabel value="#{medicoControlador.medicoActual.apellidos}, #{medicoControlador.medicoActual.nombre}"/>
+                    </p:panelGrid>
+                    
+                    <p:panelGrid columns="1">
+                        <h:commandButton value="Mostrar Citas" action="#{medicoControlador.getCitasDia()}"/>
+                    </p:panelGrid>
+                    
+                    <p:dataTable id="tablaCitas" value="#{medicoControlador.listadoCitas}" var="cita">
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" HORA "/></f:facet>
+                            <h:outputText value="#{cita.hora}">
+                                <f:convertDateTime pattern="hh:mm"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" PACIENTE "/></f:facet>
+                            <h:outputText value="#{cita.paciente.apellidos}, #{cita.paciente.nombre}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" ESTADO "/></f:facet>
+                            <h:outputText value="#{cita.estado}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" OPCIONES "/></f:facet>
+                            <p:commandButton value="Atender Cita" 
+                                             action="#{medicoControlador.doShowCita(cita)}"
+                                             rendered="#{cita.estado.etiqueta == 'PLANIFICADA'}"
+                                             />
+                            <p:commandButton id="botonAnular" 
+                                             value="Anular Cita" 
+                                             action="#{medicoControlador.notificarAusente(cita)}"
+                                             rendered="#{cita.estado.etiqueta == 'PLANIFICADA'}" 
+                                             actionListener="#{medicoControlador.notificarAusente(cita)}"
+                                             process="@this"
+                                             update="tablaCitas"/>
+                            <p:commandButton id="botonPendiente" 
+                                             value="Activar Cita" 
+                                             action="#{medicoControlador.notificarPendiente(cita)}"
+                                             rendered="#{cita.estado.etiqueta == 'AUSENTE'}" 
+                                             actionListener="#{medicoControlador.notificarPendiente(cita)}"
+                                             process="@this"
+                                             update="tablaCitas"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+                </h:form>
             </ui:define>
         </ui:composition>
 

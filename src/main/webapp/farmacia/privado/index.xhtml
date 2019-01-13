@@ -37,7 +37,7 @@
                     </h:panelGrid>
 
                     <p:dataTable value="#{farmaciaControlador.listadoRecetas}"
-                                 var="receta" styleClass="ui-noborder">
+                                 var="receta">
                         <p:column>
                             <f:facet name="header"><p:outputLabel value=" MEDICAMENTO "/></f:facet>
                             <h:outputText value="#{receta.prescripcion.medicamento.nombre}"/>
@@ -54,15 +54,19 @@
                         </p:column>
                         <p:column>
                             <f:facet name="header"><p:outputLabel value=" SITUACION "/></f:facet>
-                            <h:outputText value="#{receta.estadoReceta}"/>
+                            <h:outputText value="DISPONIBLE"/>
                         </p:column>
                         <p:column>
                             <f:facet name="header"><p:outputLabel value=" ESTADO "/></f:facet>
                             <h:outputText value="#{receta.estadoReceta}"/>
-                        </p:column>       
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" SERVIR "/></f:facet>
+                            <h:commandButton value="Servir" action="#{farmaciaControlador.setRecetasServidas(receta)}"/>
+                        </p:column> 
                     </p:dataTable>
 
-                    <h:commandButton value="Servir" action="#{farmaciaControlador.setRecetasServidas(farmaciaControlador.listadoRecetas)}"/>
+                    
 
                 </h:form>
             </ui:define>

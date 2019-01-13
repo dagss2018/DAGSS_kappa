@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    
+    <body>
+        <ui:composition template="/plantillas/plantillaComun.xhtml">
+
+            <ui:define name="tituloPagina">
+                <h2>  Pagina de Atención de Cita </h2>
+            </ui:define>            
+
+            <ui:define name="menu">
+                <ui:include src="/plantillas/menuComun.xhtml"/>
+            </ui:define>
+
+            <ui:define name="contenido">
+                <h:form>
+                <p:panelGrid columns="1">
+                    
+                    <p:panelGrid columns="2">
+                        <h:outputLabel value="#{medicoControlador.citaActual.paciente.nombre} #{medicoControlador.citaActual.paciente.apellidos}, #{medicoControlador.citaActual.paciente.numeroTarjetaSanitaria}"/>
+                        <h:commandButton value="Completar Cita" action="#{medicoControlador.finalizarCita(medicoControlador.citaActual)}"/>
+                    </p:panelGrid>
+                    
+                    <p:panelGrid columns="1">
+                        <h:commandButton value="Mostrar Prescripciones" action="#{medicoControlador.getPrescripcionesPaciente(medicoControlador.citaActual.paciente)}"/>
+                    </p:panelGrid>
+                        
+                    <p:dataTable id="tablaPrescripciones" value="#{medicoControlador.listadoPrescripciones}" var="prescripcion">
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" MEDICAMENTO "/></f:facet>
+                            <h:outputText value="#{prescripcion.medicamento.nombre}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" DOSIS "/></f:facet>
+                            <h:outputText value="#{prescripcion.dosis}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" INICIO "/></f:facet>
+                            <h:outputText value="#{prescripcion.fechaInicio}">
+                                <f:convertDateTime pattern="dd/MM/yyyy"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" FIN "/></f:facet>
+                            <h:outputText value="#{prescripcion.fechaFin}">
+                                <f:convertDateTime pattern="dd/MM/yyyy"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header"><p:outputLabel value=" OPCIONES "/></f:facet>
+                            <p:commandButton id="borrarPrescripcion"
+                                             value="Borrar"
+                                             action="#{medicoControlador.borrarPrescripcion(prescripcion)}"
+                                             actionListener="#{medicoControlador.borrarPrescripcion(prescripcion)}"
+                                             process="@this"
+                                             update="tablaPrescripciones" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panelGrid>
+                </h:form>
+            </ui:define>
+            
+        </ui:composition>
+    </body>
+</html>
