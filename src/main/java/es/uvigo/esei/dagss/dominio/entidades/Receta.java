@@ -57,7 +57,7 @@ public class Receta implements Serializable {
         this.inicioValidez = inicioValidez;
         this.finValidez = finValidez;
         this.estadoReceta = estadoReceta;
-        this.farmaciaDispensadora = this.farmaciaDispensadora;
+        this.farmaciaDispensadora = farmaciaDispensadora;
     }
 
     public Long getId() {

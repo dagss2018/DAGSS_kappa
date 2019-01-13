@@ -5,10 +5,12 @@ package es.uvigo.esei.dagss.controladores.farmacia;
 
 import es.uvigo.esei.dagss.controladores.autenticacion.AutenticacionControlador;
 import es.uvigo.esei.dagss.dominio.daos.FarmaciaDAO;
+import es.uvigo.esei.dagss.dominio.daos.PacienteDAO;
 import es.uvigo.esei.dagss.dominio.daos.RecetaDAO;
 import es.uvigo.esei.dagss.dominio.entidades.Direccion;
 import es.uvigo.esei.dagss.dominio.entidades.EstadoReceta;
 import es.uvigo.esei.dagss.dominio.entidades.Farmacia;
+import es.uvigo.esei.dagss.dominio.entidades.Paciente;
 import es.uvigo.esei.dagss.dominio.entidades.Receta;
 import es.uvigo.esei.dagss.dominio.entidades.TipoUsuario;
 import javax.inject.Named;
@@ -34,6 +36,7 @@ public class FarmaciaControlador implements Serializable {
     private String password;
     private List<Receta> listadoRecetas;
     private String numTarjPaciente;
+    private Paciente paciente;
 
     @Inject
     private AutenticacionControlador autenticacionControlador;
@@ -44,8 +47,11 @@ public class FarmaciaControlador implements Serializable {
     @EJB
     private RecetaDAO recetaDAO;
 
+    
+    @EJB
+    private PacienteDAO pacienteDAO;
     /**
-     * Creates a new instance of AdministradorControlador
+     * Creates a new instance of FarmaciaControlador
      */
     public FarmaciaControlador() {
     }
@@ -64,6 +70,14 @@ public class FarmaciaControlador implements Serializable {
 
     public void setNumTarjPaciente(String numTarjPaciente) {
         this.numTarjPaciente = numTarjPaciente;
+    }
+    
+    public Paciente getPaciente() {
+        return paciente;
+    }
+
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
     }
     
     public String getNif() {
@@ -130,14 +144,14 @@ public class FarmaciaControlador implements Serializable {
     }
     
     //devuelve las lista de recetas actuales de un paciente (error si la farmacia no esta logueada)
-    public String getRecetasPaciente(){
+    public void getRecetasPaciente(){
         if(this.autenticacionControlador.isUsuarioAutenticado()){
+            Paciente paciente=this.pacienteDAO.buscarPorTarjetaSanitaria(this.numTarjPaciente);
+            setPaciente(paciente);
             List<Receta> toret=this.recetaDAO.buscarPorNumTarjeta(this.numTarjPaciente);
             for(Receta receta:toret) if(!receta.enFecha()) toret.remove(receta);
-            this.listadoRecetas=toret;
-            return "lista_recetas";
+            setListadoRecetas(toret);
         }
-        else return "error";
     }
     
     //cambia el estado de las recetas generadas a servidas
