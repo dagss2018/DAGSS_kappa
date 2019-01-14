@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    
+    <body>
+        <ui:composition template="/plantillas/plantillaComun.xhtml">
+
+            <ui:define name="tituloPagina">
+                <h2>  Pagina de Atención de Cita </h2>
+            </ui:define>            
+
+            <ui:define name="menu">
+                <ui:include src="/plantillas/menuComun.xhtml"/>
+            </ui:define>
+
+            <ui:define name="contenido">
+                <h:form>
+                    <p:panelGrid columns="1" styleClass="ui-noborder">
+                        <p:dataTable id="tablaMedicamentos" value="#{medicoControlador.listadoMedicamentos}" var="medicamento">
+                            <p:column>
+                                <f:facet name="header"><p:outputLabel value=" MEDICAMENTO "/></f:facet>
+                                <h:outputText value="#{medicamento.nombre}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header"><p:outputLabel value=" PRINCIPIO ACT. "/></f:facet>
+                                <h:outputText value="#{medicamento.principioActivo}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header"><p:outputLabel value=" FABRICANTE "/></f:facet>
+                                <h:outputText value="#{medicamento.fabricante}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header"><p:outputLabel value=" FAMILIA "/></f:facet>
+                                <h:outputText value="#{medicamento.familia}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header"><p:outputLabel value=" DOSIS "/></f:facet>
+                                <h:outputText value="#{medicamento.numeroDosis}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header"><p:outputLabel value=" OPCIONES "/></f:facet>
+                                <h:commandButton value="Seleccionar" action="#{medicoControlador.seleccionarMedicamento(medicamento)}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <h:commandButton immediate="true" value="Cancelar" action="#{medicoControlador.doCancelarSeleccionarMedicamento()}" />
+                    </p:panelGrid>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </body>
+</html>

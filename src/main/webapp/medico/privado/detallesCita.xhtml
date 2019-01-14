@@ -24,7 +24,7 @@ and open the template in the editor.
 
             <ui:define name="contenido">
                 <h:form>
-                <p:panelGrid columns="1">
+                <p:panelGrid columns="1" styleClass="ui-noborder">
                     
                     <p:panelGrid columns="2">
                         <h:outputLabel value="#{medicoControlador.citaActual.paciente.nombre} #{medicoControlador.citaActual.paciente.apellidos}, #{medicoControlador.citaActual.paciente.numeroTarjetaSanitaria}"/>
@@ -66,6 +66,33 @@ and open the template in the editor.
                                              update="tablaPrescripciones" />
                         </p:column>
                     </p:dataTable>
+                    
+                    <p:panelGrid columns="1">
+                        <p:panelGrid columns="7" styleClass="ui-noborder">
+                            <p:outputLabel value="Texto de busqueda:"/>
+                            <h:inputText value="#{medicoControlador.textoBusqueda}"/>
+                            <p:outputLabel value="Dosis:"/>
+                            <h:inputText value="#{medicoControlador.nuevaPrescripcion.dosis}"/>
+                            <p:outputLabel for="fin" value="Fin:"/>
+                            <p:calendar id="fin" value="#{medicoControlador.nuevaPrescripcion.fechaFin}"/>
+                            <p:commandButton id="Add"
+                                             value="Añadir"
+                                             action="#{medicoControlador.crearPrescripcion()}"
+                                             actionListener="#{medicoControlador.crearPrescripcion()}"
+                                             process="@this"
+                                             update="tablaPrescripciones" />
+                        </p:panelGrid>
+                        <p:panelGrid columns="3" styleClass="ui-noborder">
+                            <h:commandButton value="Buscar por Nombre" action="#{medicoControlador.medicamentosPorNombre}"/>
+                            <h:commandButton value="Buscar por Fabricante" action="#{medicoControlador.medicamentosPorFabricante}"/>
+                            <h:commandButton value="Buscar por Principio Activo" action="#{medicoControlador.medicamentosPorPrinActivo}"/>
+                        </p:panelGrid>
+                        <p:panelGrid columns="2" styleClass="ui-noborder">
+                            <p:outputLabel value="Indicaciones:"/>
+                            <h:inputTextarea value="#{medicoControlador.nuevaPrescripcion.indicaciones}"/>
+                        </p:panelGrid>
+                    </p:panelGrid>
+                    
                 </p:panelGrid>
                 </h:form>
             </ui:define>

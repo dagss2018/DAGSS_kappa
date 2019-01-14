@@ -231,11 +231,11 @@ public class MedicoControlador implements Serializable {
     public String getMedicamentosPorNombre(){
         if(this.textoBusqueda.isEmpty()){
             this.listadoMedicamentos=this.medicamentoDAO.buscarTodos();
-            return "crear_prescripcion";
+            return "seleccionar_medicamento";
         } //si el form esta vacio devuelve todos los medicamentos
         else{
             this.listadoMedicamentos=this.medicamentoDAO.busquedaPorNombre(this.textoBusqueda);
-            return "crear_prescripcion";
+            return "seleccionar_medicamento";
         }
     }
     
@@ -243,11 +243,11 @@ public class MedicoControlador implements Serializable {
     public String getMedicamentosPorPrinActivo(){
         if(this.textoBusqueda.isEmpty()){
             this.listadoMedicamentos=this.medicamentoDAO.buscarTodos();
-            return "crear_prescripcion";
+            return "seleccionar_medicamento";
         } //si el form esta vacio devuelve todos los medicamentos
         else{
             this.listadoMedicamentos=this.medicamentoDAO.busquedaPorPrinActivo(this.textoBusqueda);
-            return "crear_prescripcion";
+            return "seleccionar_medicamento";
         }
     }
     
@@ -255,18 +255,37 @@ public class MedicoControlador implements Serializable {
     public String getMedicamentosPorFabricante(){
         if(this.textoBusqueda.isEmpty()){
             this.listadoMedicamentos=this.medicamentoDAO.buscarTodos();
-            return "crear_prescripcion";
+            return "seleccionar_medicamento";
         } //si el form esta vacio devuelve todos los medicamentos
         else{
             this.listadoMedicamentos=this.medicamentoDAO.busquedaPorFabricante(this.textoBusqueda);
-            return "crear_prescripcion";
+            return "seleccionar_medicamento";
         }
+    }
+    
+    //Seleccionar medicamento para una nueva prescripcion y volver al menu de la cita
+    public String seleccionarMedicamento(Medicamento medicamento){
+        this.textoBusqueda = medicamento.getNombre();
+        this.nuevaPrescripcion.setMedicamento(medicamento);
+        return "detallesCita";
+    }
+    
+    //Cancelar la seleccion de medicamento
+    public String doCancelarSeleccionarMedicamento(){
+        return "detallesCita";
     }
     
     //crea la prescripcion para un paciente dado (pasar recetas en null y prescripcionDAO se encarga de crearlas)
     public void crearPrescripcion(){
+        this.nuevaPrescripcion.setPaciente(this.citaActual.getPaciente());
+        Date inicio = new Date();
+        this.nuevaPrescripcion.setFechaInicio(inicio);
         this.nuevaPrescripcion.setMedico(this.medicoActual);
-        this.prescripcionDAO.crear(this.nuevaPrescripcion);
+        if((inicio.getTime()<this.nuevaPrescripcion.getFechaFin().getTime())){
+            if(this.nuevaPrescripcion.getMedicamento()!= null){
+                this.prescripcionDAO.crear(this.nuevaPrescripcion);
+            }
+        }
     }
     
     //elimina una prescripcion dada (y todas sus recetas asignadas)
@@ -275,6 +294,7 @@ public class MedicoControlador implements Serializable {
         this.prescripcionDAO.eliminar(p);
     }
     
+    //finalizar la atencion de una cita
     public String finalizarCita(Cita cita){
         if(this.autenticacionControlador.isUsuarioAutenticado()){
             if(cita.getEstado().equals(EstadoCita.PLANIFICADA)) cita.setEstado(EstadoCita.COMPLETADA);
@@ -283,6 +303,7 @@ public class MedicoControlador implements Serializable {
         return "index";
     }
     
+    //Cambiar el estado de la cita a AUSENTE
     public void notificarAusente(Cita cita){
         if(this.autenticacionControlador.isUsuarioAutenticado()){
             if(cita.getEstado().equals(EstadoCita.PLANIFICADA)) cita.setEstado(EstadoCita.AUSENTE);
@@ -290,6 +311,7 @@ public class MedicoControlador implements Serializable {
         }
     }
     
+    //Cambiar estado de la cita a PLANIFICADA
     public void notificarPendiente(Cita cita){
         if(this.autenticacionControlador.isUsuarioAutenticado()){
             if(cita.getEstado().equals(EstadoCita.AUSENTE)) cita.setEstado(EstadoCita.PLANIFICADA);
