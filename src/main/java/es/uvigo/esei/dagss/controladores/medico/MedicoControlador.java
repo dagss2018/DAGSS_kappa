@@ -13,6 +13,7 @@ import es.uvigo.esei.dagss.dominio.daos.RecetaDAO;
 import es.uvigo.esei.dagss.dominio.entidades.Cita;
 import es.uvigo.esei.dagss.dominio.entidades.Direccion;
 import es.uvigo.esei.dagss.dominio.entidades.EstadoCita;
+import es.uvigo.esei.dagss.dominio.entidades.EstadoReceta;
 import es.uvigo.esei.dagss.dominio.entidades.Medicamento;
 import es.uvigo.esei.dagss.dominio.entidades.Medico;
 import es.uvigo.esei.dagss.dominio.entidades.Paciente;
@@ -197,6 +198,7 @@ public class MedicoControlador implements Serializable {
     //Acciones
     public String doShowCita(Cita cita) {
         setCitaActual(cita);
+        this.nuevaPrescripcion = new Prescripcion();
         return "detallesCita";
     }
     
@@ -282,6 +284,19 @@ public class MedicoControlador implements Serializable {
         this.nuevaPrescripcion.setFechaInicio(inicio);
         this.nuevaPrescripcion.setMedico(this.medicoActual);
         if((inicio.getTime()<this.nuevaPrescripcion.getFechaFin().getTime())){
+            long time=this.nuevaPrescripcion.getFechaFin().getTime()-this.nuevaPrescripcion.getFechaInicio().getTime();
+            final long quinceDias=1296000000; //quince dias en ms
+            Date fechaI=new Date();
+            int numReceta=0;
+            List<Receta> recetas = this.nuevaPrescripcion.getRecetas();
+            do{
+                fechaI.setTime(this.nuevaPrescripcion.getFechaInicio().getTime()+quinceDias*numReceta);
+                numReceta++;
+                Receta r=new Receta(this.nuevaPrescripcion,this.nuevaPrescripcion.getDosis(),inicio,this.nuevaPrescripcion.getFechaFin(),EstadoReceta.GENERADA,null);
+                recetas.add(r);
+                time-=quinceDias;
+            }while(time>=0);
+            this.nuevaPrescripcion.setRecetas(recetas);
             if(this.nuevaPrescripcion.getMedicamento()!= null){
                 this.prescripcionDAO.crear(this.nuevaPrescripcion);
             }

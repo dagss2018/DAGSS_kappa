@@ -62,18 +62,6 @@ public class Prescripcion implements Serializable {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.recetas = new ArrayList<>();
-        long time=getFechaFin().getTime()-getFechaInicio().getTime();
-        final long quinceDias=1296000000; //quince dias en ms
-        Date fechaI=new Date();
-        int numReceta=0;
-        do{
-            fechaI.setTime(getFechaInicio().getTime()+quinceDias*numReceta);
-            numReceta++;
-            Receta r=new Receta(this,getDosis(),fechaI,getFechaFin(),EstadoReceta.GENERADA,null);
-            recetas.add(r);
-            time-=quinceDias;
-        }while(time>=0);
-        setRecetas(recetas);
     }
 
     public Long getId() {
