@@ -22,6 +22,7 @@ import es.uvigo.esei.dagss.dominio.entidades.TipoUsuario;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -206,8 +207,13 @@ public class MedicoControlador implements Serializable {
         if(this.autenticacionControlador.isUsuarioAutenticado()){
             Date date=new Date();
             List<Cita> toret=this.citaDAO.buscarPorDniMedico(this.medicoActual.getDni());
-            for(Cita cita:toret) if(!(date.getTime()>=cita.getFecha().getTime())||(date.getTime()<(cita.getFecha().getTime() + 86400000))) toret.remove(cita);
-            setListadoCitas(toret);
+            List<Cita> citas = new ArrayList<>();
+            for(Cita cita:toret){ 
+                if((date.getTime()>=cita.getFecha().getTime())&&(date.getTime()<(cita.getFecha().getTime() + (long)86400000))){
+                    citas.add(cita);
+                }
+            }
+            setListadoCitas(citas);
         }
         
     }
@@ -223,8 +229,13 @@ public class MedicoControlador implements Serializable {
         if(this.autenticacionControlador.isUsuarioAutenticado()){
             Date date=new Date();
             List<Prescripcion> toret=this.prescripcionDAO.buscarPorDniPaciente(paciente.getDni());
-            for(Prescripcion prescripcion:toret) if((date.getTime()>=prescripcion.getFechaFin().getTime())) toret.remove(prescripcion);
-            setListadoPrescripciones(toret);
+            List<Prescripcion> prescripciones = new ArrayList<>();
+            for(Prescripcion prescripcion:toret) {
+                if((date.getTime()<=prescripcion.getFechaFin().getTime())){
+                    prescripciones.add(prescripcion);
+                }
+            }
+            setListadoPrescripciones(prescripciones);
         }
     }
     

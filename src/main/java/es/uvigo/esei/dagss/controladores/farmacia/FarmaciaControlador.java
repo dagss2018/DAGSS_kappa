@@ -16,6 +16,7 @@ import es.uvigo.esei.dagss.dominio.entidades.TipoUsuario;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import java.util.List;
 import javax.ejb.EJB;
@@ -149,8 +150,13 @@ public class FarmaciaControlador implements Serializable {
             Paciente paciente=this.pacienteDAO.buscarPorTarjetaSanitaria(this.numTarjPaciente);
             setPaciente(paciente);
             List<Receta> toret=this.recetaDAO.buscarPorNumTarjeta(this.numTarjPaciente);
-            for(Receta receta:toret) if(!receta.enFecha()) toret.remove(receta);
-            setListadoRecetas(toret);
+            List<Receta> recetas = new ArrayList<>();
+            for(Receta receta:toret){ 
+                if((receta.enFecha())){ 
+                    recetas.add(receta);
+                }
+            }
+            setListadoRecetas(recetas);
         }
     }
     

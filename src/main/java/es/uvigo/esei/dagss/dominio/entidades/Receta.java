@@ -151,6 +151,6 @@ public class Receta implements Serializable {
 
     public boolean enFecha(){
         Date fecha=new Date();
-        return this.getInicioValidez().getTime()<=fecha.getTime() || this.getFinValidez().getTime()>fecha.getTime();
+        return ((this.getInicioValidez().before(fecha)) && (this.getFinValidez().after(fecha)));
     }
 }
