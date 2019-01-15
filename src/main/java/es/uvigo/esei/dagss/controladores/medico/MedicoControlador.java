@@ -283,22 +283,26 @@ public class MedicoControlador implements Serializable {
         Date inicio = new Date();
         this.nuevaPrescripcion.setFechaInicio(inicio);
         this.nuevaPrescripcion.setMedico(this.medicoActual);
-        if((inicio.getTime()<this.nuevaPrescripcion.getFechaFin().getTime())){
+        if(inicio.getTime()<this.nuevaPrescripcion.getFechaFin().getTime()){
             long time=this.nuevaPrescripcion.getFechaFin().getTime()-this.nuevaPrescripcion.getFechaInicio().getTime();
             final long quinceDias=1296000000; //quince dias en ms
-            Date fechaI=new Date();
+            
             int numReceta=0;
             List<Receta> recetas = this.nuevaPrescripcion.getRecetas();
             do{
-                fechaI.setTime(this.nuevaPrescripcion.getFechaInicio().getTime()+quinceDias*numReceta);
-                numReceta++;
-                Receta r=new Receta(this.nuevaPrescripcion,this.nuevaPrescripcion.getDosis(),inicio,this.nuevaPrescripcion.getFechaFin(),EstadoReceta.GENERADA,null);
+                Date fechaI=new Date();
+                fechaI.setTime(this.nuevaPrescripcion.getFechaInicio().getTime()+quinceDias*(long)numReceta);
+                numReceta = numReceta+1;
+                Date fechaF = new Date();
+                fechaF.setTime(this.nuevaPrescripcion.getFechaInicio().getTime()+quinceDias*(long)numReceta);
+                Receta r=new Receta(this.nuevaPrescripcion,this.nuevaPrescripcion.getDosis(),fechaF,fechaI,EstadoReceta.GENERADA,null);
                 recetas.add(r);
                 time-=quinceDias;
             }while(time>=0);
             this.nuevaPrescripcion.setRecetas(recetas);
             if(this.nuevaPrescripcion.getMedicamento()!= null){
-                this.prescripcionDAO.crear(this.nuevaPrescripcion);
+                prescripcionDAO.crear(this.nuevaPrescripcion);
+               
             }
         }
     }

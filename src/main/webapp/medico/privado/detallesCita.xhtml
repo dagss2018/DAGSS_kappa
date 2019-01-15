@@ -75,12 +75,10 @@ and open the template in the editor.
                             <h:inputText value="#{medicoControlador.nuevaPrescripcion.dosis}"/>
                             <p:outputLabel for="fin" value="Fin:"/>
                             <p:calendar id="fin" value="#{medicoControlador.nuevaPrescripcion.fechaFin}"/>
-                            <p:commandButton id="Añadir"
+                            <h:commandButton id="Añadir"
                                              value="Añadir"
                                              action="#{medicoControlador.crearPrescripcion()}"
-                                             actionListener="#{medicoControlador.crearPrescripcion()}"
-                                             process="@this"
-                                             update="tablaPrescripciones" />
+                                              />
                         </p:panelGrid>
                         <p:panelGrid columns="3" styleClass="ui-noborder">
                             <h:commandButton value="Buscar por Nombre" action="#{medicoControlador.getMedicamentosPorNombre()}"/>

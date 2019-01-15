@@ -47,15 +47,15 @@ public class Receta implements Serializable {
     public Receta() {
     }
 
-    public Receta(Prescripcion prescripcion, Integer cantidad, Date inicioValidez, Date finValidez, EstadoReceta estadoReceta) {
-        this(prescripcion, cantidad, inicioValidez, finValidez, estadoReceta, null);
+    public Receta(Prescripcion prescripcion, Integer cantidad, Date finValidez, Date inicioValidez, EstadoReceta estadoReceta) {
+        this(prescripcion, cantidad, finValidez, inicioValidez, estadoReceta, null);
     }
 
-    public Receta(Prescripcion prescripcion, Integer cantidad, Date inicioValidez, Date finValidez, EstadoReceta estadoReceta, Farmacia farmaciaDispensadora) {
+    public Receta(Prescripcion prescripcion, Integer cantidad, Date finValidez, Date inicioValidez, EstadoReceta estadoReceta, Farmacia farmaciaDispensadora) {
         this.prescripcion = prescripcion;
         this.cantidad = cantidad;
-        this.inicioValidez = inicioValidez;
         this.finValidez = finValidez;
+        this.inicioValidez = inicioValidez;
         this.estadoReceta = estadoReceta;
         this.farmaciaDispensadora = farmaciaDispensadora;
     }
